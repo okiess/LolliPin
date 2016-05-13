@@ -33,7 +33,6 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
 
     public static final String TAG = AppLockActivity.class.getSimpleName();
     public static final String ACTION_CANCEL = TAG + ".actionCancelled";
-    public static final String ACTION_PIN = TAG + ".actionPin";
     private static final int DEFAULT_PIN_LENGTH = 6;
 
     protected TextView mStepTextView;
@@ -291,11 +290,6 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
                 if (mPinCode.equals(mOldPinCode)) {
                     setResult(RESULT_OK);
                     mLockManager.getAppLock().setPasscode(mPinCode);
-                    Intent intent = new Intent().setAction(ACTION_PIN);
-                    intent.putExtra("pin", mPinCode);
-                    LocalBroadcastManager
-                            .getInstance(this)
-                            .sendBroadcast(intent);
                     onPinCodeSuccess();
                     finish();
                 } else {
@@ -402,6 +396,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
      */
     public void setPinCode(String pinCode) {
         mPinCode = pinCode;
+        onPin(mPinCode);
         mPinCodeRoundView.refresh(mPinCode.length());
     }
 
@@ -437,6 +432,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
      * @param attempts the number of attempts the user had used
      */
     public abstract void onPinSuccess(int attempts);
+    public abstract void onPin(String pin);
 
     /**
      * Gets the resource id to the {@link View} to be set with {@link #setContentView(int)}.
