@@ -74,6 +74,11 @@ public class CustomPinActivity extends AppLockActivity {
     }
 
     @Override
+    public void onPin(String pin) {
+
+    }
+
+    @Override
     public int getPinLength() {
         return super.getPinLength();//you can override this method to change the pin length from the default 4
     }

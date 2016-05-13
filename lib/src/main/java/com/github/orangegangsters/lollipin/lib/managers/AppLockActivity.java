@@ -291,6 +291,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
                     setResult(RESULT_OK);
                     mLockManager.getAppLock().setPasscode(mPinCode);
                     onPinCodeSuccess();
+                    onPin(mPinCode);
                     finish();
                 } else {
                     mOldPinCode = "";
@@ -314,6 +315,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
                 if (mLockManager.getAppLock().checkPasscode(mPinCode)) {
                     setResult(RESULT_OK);
                     onPinCodeSuccess();
+                    onPin(mPinCode);
                     finish();
                 } else {
                     onPinCodeError();
@@ -396,10 +398,9 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
      */
     public void setPinCode(String pinCode) {
         mPinCode = pinCode;
-        onPin(mPinCode);
         mPinCodeRoundView.refresh(mPinCode.length());
     }
-    
+
     /**
      * Returns the type of this {@link com.github.orangegangsters.lollipin.lib.managers.AppLockActivity}
      */
