@@ -97,6 +97,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
         if (mFingerprintUiHelper != null) {
             mFingerprintUiHelper.stopListening();
         }
+        ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
     }
 
     /**
@@ -146,10 +147,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
         mEditText.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                if (keyboardShown(mEditText.getRootView())) {
-                    Log.d(TAG, "keyboard UP");
-                } else {
-                    Log.d(TAG, "keyboard Down");
+                if (!keyboardShown(mEditText.getRootView())) {
                     ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
                 }
             }
@@ -159,9 +157,15 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                Log.d(TAG, "onTextChanged: " + s.toString() + " START: " + start + " BEFORE: " + before + " COUNT: " + count);
+                // Log.d(TAG, "onTextChanged: " + s.toString() + " START: " + start + " BEFORE: " + before + " COUNT: " + count);
                 if (s.toString() != null && !s.toString().isEmpty()) {
-                    setPinCode(mPinCode + s.toString().substring(s.toString().length() - 1));
+                    if (count == 0) {
+                        setPinCode(mPinCode.substring(0, mPinCode.length() - 1));
+                    } else {
+                        setPinCode(mPinCode + s.toString().substring(s.toString().length() - 1));
+                    }
+                } else {
+                    setPinCode("");
                 }
                 if (mPinCode.length() == AppLockActivity.this.getPinLength()) {
                     mPinCodeRoundView.refresh(mPinCode.length());
@@ -323,6 +327,28 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
         }
     }
 
+    private boolean fingerprintAvailable() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (mFingerprintManager == null) {
+                mFingerprintManager = (FingerprintManager) getSystemService(Context.FINGERPRINT_SERVICE);
+            }
+            if (mFingerprintUiHelper == null) {
+                mFingerprintUiHelper = new FingerprintUiHelper.FingerprintUiHelperBuilder(mFingerprintManager).build(mFingerprintImageView, mFingerprintTextView, this);
+            }
+            try {
+                return (mFingerprintManager.isHardwareDetected() && mFingerprintUiHelper.isFingerprintAuthAvailable());
+            } catch (SecurityException e){
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    public boolean pinCodeValid(String s) {
+        return s.matches("^([0-9]+[a-zA-Z]+|[a-zA-Z]+[0-9]+)[0-9a-zA-Z]*$");
+    }
+
     /**
      * Switch over the {@link #mType} to determine if the password is ok, if we should pass to the next step etc...
      */
@@ -339,18 +365,28 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
                 }
                 break;
             case AppLock.ENABLE_PINLOCK:
-                mOldPinCode = mPinCode;
-                setPinCode("");
-                mEditText.setText("");
-                mType = AppLock.CONFIRM_PIN;
-                setStepText();
+                if (pinCodeValid(mPinCode)) {
+                    mOldPinCode = mPinCode;
+                    setPinCode("");
+                    mEditText.setText("");
+                    mType = AppLock.CONFIRM_PIN;
+                    setStepText();
+                } else {
+                    // TODO show error message
+                    mOldPinCode = "";
+                    setPinCode("");
+                    mEditText.setText("");
+                    mType = AppLock.ENABLE_PINLOCK;
+                    setStepText();
+                    onPinCodeError();
+                }
                 break;
             case AppLock.CONFIRM_PIN:
                 if (mPinCode.equals(mOldPinCode)) {
                     setResult(RESULT_OK);
                     mLockManager.getAppLock().setPasscode(mPinCode);
                     onPinCodeSuccess();
-                    onPin(mPinCode);
+                    onPin(mPinCode, fingerprintAvailable());
                     finish();
                 } else {
                     mOldPinCode = "";
@@ -375,7 +411,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
                 if (mLockManager.getAppLock().checkPasscode(mPinCode)) {
                     setResult(RESULT_OK);
                     onPinCodeSuccess();
-                    onPin(mPinCode);
+                    onPin(mPinCode, fingerprintAvailable());
                     finish();
                 } else {
                     onPinCodeError();
@@ -404,7 +440,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
 
     @Override
     public void onAuthenticated() {
-        Log.e(TAG, "Fingerprint READ!!!");
+        Log.i(TAG, "Fingerprint READ!!!");
         setResult(RESULT_OK);
         onPinCodeSuccess();
         finish();
@@ -492,7 +528,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
      * @param attempts the number of attempts the user had used
      */
     public abstract void onPinSuccess(int attempts);
-    public abstract void onPin(String pin);
+    public abstract void onPin(String pin, boolean fingerprintAvailable);
 
     /**
      * Gets the resource id to the {@link View} to be set with {@link #setContentView(int)}.

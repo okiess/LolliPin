@@ -65,17 +65,14 @@ public class CustomPinActivity extends AppLockActivity {
 
     @Override
     public void onPinFailure(int attempts) {
-
     }
 
     @Override
     public void onPinSuccess(int attempts) {
-
     }
 
     @Override
-    public void onPin(String pin) {
-
+    public void onPin(String pin, boolean fingerprintAvailable) {
     }
 
     @Override
