@@ -72,7 +72,7 @@ public class CustomPinActivity extends AppLockActivity {
     }
 
     @Override
-    public void onPin(String pin, boolean fingerprintAvailable) {
+    public void onPin(String pin, boolean setup, boolean fingerprintAvailable) {
     }
 
     @Override
