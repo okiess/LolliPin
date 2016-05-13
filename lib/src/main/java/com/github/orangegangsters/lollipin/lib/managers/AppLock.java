@@ -97,10 +97,13 @@ public abstract class AppLock {
      */
     public abstract boolean shouldShowForgot();
 
+    public abstract boolean shouldShowFingerprint();
+
     /**
      * Set the forgot option used by {@link com.github.orangegangsters.lollipin.lib.managers.AppLockActivity}
      */
     public abstract void setShouldShowForgot(boolean showForgot);
+    public abstract void setShouldShowFingerprint(boolean showFingerprint);
 
     /**
      * Get whether the user backed out of the {@link AppLockActivity} previously

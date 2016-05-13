@@ -48,6 +48,7 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
      * The {@link android.content.SharedPreferences} key used to store the forgot option
      */
     private static final String SHOW_FORGOT_PREFERENCE_KEY = "SHOW_FORGOT_PREFERENCE_KEY";
+    private static final String SHOW_FINGERPRINT_PREFERENCE_KEY = "SHOW_USE_FINGERPRINT_KEY";
     /**
      * The {@link SharedPreferences} key used to store whether the user has backed out of the {@link AppLockActivity}
      */
@@ -172,6 +173,12 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
         editor.apply();
     }
 
+    public void setShouldShowFingerprint(boolean showFingerprint) {
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putBoolean(SHOW_FINGERPRINT_PREFERENCE_KEY, showFingerprint);
+        editor.apply();
+    }
+
     @Override
     public boolean pinChallengeCancelled() {
         return mSharedPreferences.getBoolean(PIN_CHALLENGE_CANCELLED_PREFERENCE_KEY, false);
@@ -187,6 +194,11 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
     @Override
     public boolean shouldShowForgot() {
         return mSharedPreferences.getBoolean(SHOW_FORGOT_PREFERENCE_KEY, true);
+    }
+
+    @Override
+    public boolean shouldShowFingerprint() {
+        return mSharedPreferences.getBoolean(SHOW_FINGERPRINT_PREFERENCE_KEY, false);
     }
 
     @Override

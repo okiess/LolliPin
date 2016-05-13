@@ -138,26 +138,34 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
     private void initLayoutForFingerprint() {
         mFingerprintImageView = (ImageView) this.findViewById(R.id.pin_code_fingerprint_imageview);
         mFingerprintTextView = (TextView) this.findViewById(R.id.pin_code_fingerprint_textview);
-        if (mType == AppLock.UNLOCK_PIN && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mFingerprintManager = (FingerprintManager) getSystemService(Context.FINGERPRINT_SERVICE);
-            mFingerprintUiHelper = new FingerprintUiHelper.FingerprintUiHelperBuilder(mFingerprintManager).build(mFingerprintImageView, mFingerprintTextView, this);
-            try {
-                if (mFingerprintManager.isHardwareDetected() && mFingerprintUiHelper.isFingerprintAuthAvailable()) {
-                    mFingerprintImageView.setVisibility(View.VISIBLE);
-                    mFingerprintTextView.setVisibility(View.VISIBLE);
-                    mFingerprintUiHelper.startListening();
-                } else {
+        if (mLockManager.getAppLock().shouldShowFingerprint()) {
+            if (mType == AppLock.UNLOCK_PIN && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                mFingerprintManager = (FingerprintManager) getSystemService(Context.FINGERPRINT_SERVICE);
+                mFingerprintUiHelper = new FingerprintUiHelper.FingerprintUiHelperBuilder(mFingerprintManager).build(mFingerprintImageView, mFingerprintTextView, this);
+                try {
+                    if (mFingerprintManager.isHardwareDetected() && mFingerprintUiHelper.isFingerprintAuthAvailable()) {
+                        mFingerprintImageView.setVisibility(View.VISIBLE);
+                        mFingerprintTextView.setVisibility(View.VISIBLE);
+                        mFingerprintUiHelper.startListening();
+                    } else {
+                        mFingerprintImageView.setVisibility(View.GONE);
+                        mFingerprintTextView.setVisibility(View.GONE);
+                    }
+                } catch (SecurityException e) {
+                    Log.e(TAG, e.toString());
                     mFingerprintImageView.setVisibility(View.GONE);
                     mFingerprintTextView.setVisibility(View.GONE);
                 }
-            } catch (SecurityException e) {
-                Log.e(TAG, e.toString());
+            } else {
                 mFingerprintImageView.setVisibility(View.GONE);
                 mFingerprintTextView.setVisibility(View.GONE);
             }
         } else {
             mFingerprintImageView.setVisibility(View.GONE);
             mFingerprintTextView.setVisibility(View.GONE);
+            if (mFingerprintUiHelper != null) {
+                mFingerprintUiHelper.stopListening();
+            }
         }
     }
 
