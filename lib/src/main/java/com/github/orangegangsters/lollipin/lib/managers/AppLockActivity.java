@@ -33,6 +33,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
 
     public static final String TAG = AppLockActivity.class.getSimpleName();
     public static final String ACTION_CANCEL = TAG + ".actionCancelled";
+    public static final String ACTION_PIN = TAG + ".actionPin";
     private static final int DEFAULT_PIN_LENGTH = 6;
 
     protected TextView mStepTextView;
@@ -290,6 +291,11 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
                 if (mPinCode.equals(mOldPinCode)) {
                     setResult(RESULT_OK);
                     mLockManager.getAppLock().setPasscode(mPinCode);
+                    Intent intent = new Intent().setAction(ACTION_PIN);
+                    intent.putExtra("pin", mPinCode);
+                    LocalBroadcastManager
+                            .getInstance(this)
+                            .sendBroadcast(intent);
                     onPinCodeSuccess();
                     finish();
                 } else {
