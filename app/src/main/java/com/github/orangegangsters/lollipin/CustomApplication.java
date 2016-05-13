@@ -19,6 +19,6 @@ public class CustomApplication extends Application {
         LockManager<CustomPinActivity> lockManager = LockManager.getInstance();
         lockManager.enableAppLock(this, CustomPinActivity.class);
         lockManager.getAppLock().setLogoId(R.drawable.security_lock);
-        // lockManager.getAppLock().setShouldShowFingerprint(false);
+        lockManager.getAppLock().setShouldShowFingerprint(true);
     }
 }

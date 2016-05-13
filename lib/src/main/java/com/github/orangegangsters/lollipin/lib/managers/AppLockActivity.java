@@ -2,14 +2,22 @@ package com.github.orangegangsters.lollipin.lib.managers;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -41,6 +49,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
     protected KeyboardView mKeyboardView;
     protected ImageView mFingerprintImageView;
     protected TextView mFingerprintTextView;
+    protected EditText mEditText;
 
     protected LockManager mLockManager;
 
@@ -117,7 +126,8 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
         mForgotTextView = (TextView) this.findViewById(R.id.pin_code_forgot_textview);
         mForgotTextView.setOnClickListener(this);
         mKeyboardView = (KeyboardView) this.findViewById(R.id.pin_code_keyboard_view);
-        mKeyboardView.setKeyboardButtonClickedListener(this);
+        // mKeyboardView.setKeyboardButtonClickedListener(this);
+        mKeyboardView.setVisibility(View.GONE);
 
         int logoId = mLockManager.getAppLock().getLogoId();
         ImageView logoImage = ((ImageView) findViewById(R.id.pin_code_logo_imageview));
@@ -129,6 +139,45 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
         mForgotTextView.setVisibility(mLockManager.getAppLock().shouldShowForgot() ? View.VISIBLE : View.GONE);
 
         setStepText();
+
+        mEditText = (EditText) this.findViewById(R.id.hidden_input);
+        mEditText.setVisibility(View.VISIBLE);
+        mEditText.requestFocus();
+        mEditText.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if (keyboardShown(mEditText.getRootView())) {
+                    Log.d(TAG, "keyboard UP");
+                } else {
+                    Log.d(TAG, "keyboard Down");
+                    ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+                }
+            }
+        });
+        mEditText.addTextChangedListener(new TextWatcher() {
+            public void afterTextChanged(Editable s) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Log.d(TAG, "onTextChanged: " + s.toString() + " START: " + start + " BEFORE: " + before + " COUNT: " + count);
+                if (s.toString() != null && !s.toString().isEmpty()) {
+                    setPinCode(mPinCode + s.toString().substring(s.toString().length() - 1));
+                }
+                if (mPinCode.length() == AppLockActivity.this.getPinLength()) {
+                    mPinCodeRoundView.refresh(mPinCode.length());
+                    onPinCodeInputed();
+                }
+            }
+        });
+    }
+
+    private boolean keyboardShown(View rootView) {
+        final int softKeyboardHeight = 100;
+        Rect r = new Rect();
+        rootView.getWindowVisibleDisplayFrame(r);
+        DisplayMetrics dm = rootView.getResources().getDisplayMetrics();
+        int heightDiff = rootView.getBottom() - r.bottom;
+        return heightDiff > softKeyboardHeight * dm.density;
     }
 
     /**
@@ -239,6 +288,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
             //Animate if greater than 2.3.3
             overridePendingTransition(R.anim.nothing, R.anim.slide_down);
         }
+        ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
     }
 
     /**
@@ -291,6 +341,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
             case AppLock.ENABLE_PINLOCK:
                 mOldPinCode = mPinCode;
                 setPinCode("");
+                mEditText.setText("");
                 mType = AppLock.CONFIRM_PIN;
                 setStepText();
                 break;
@@ -304,6 +355,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
                 } else {
                     mOldPinCode = "";
                     setPinCode("");
+                    mEditText.setText("");
                     mType = AppLock.ENABLE_PINLOCK;
                     setStepText();
                     onPinCodeError();
@@ -390,7 +442,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
                 mPinCodeRoundView.refresh(mPinCode.length());
                 Animation animation = AnimationUtils.loadAnimation(
                         AppLockActivity.this, R.anim.shake);
-                mKeyboardView.startAnimation(animation);
+                mPinCodeRoundView.startAnimation(animation);
             }
         };
         runOnUiThread(thread);
