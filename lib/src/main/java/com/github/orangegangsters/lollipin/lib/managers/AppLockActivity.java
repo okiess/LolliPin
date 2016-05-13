@@ -399,8 +399,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
         onPin(mPinCode);
         mPinCodeRoundView.refresh(mPinCode.length());
     }
-
-
+    
     /**
      * Returns the type of this {@link com.github.orangegangsters.lollipin.lib.managers.AppLockActivity}
      */
