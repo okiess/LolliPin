@@ -387,7 +387,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
                     setResult(RESULT_OK);
                     mLockManager.getAppLock().setPasscode(mPinCode);
                     onPinCodeSuccess();
-                    onPin(mPinCode, fingerprintAvailable());
+                    onPin(mPinCode, true, fingerprintAvailable());
                     finish();
                 } else {
                     mOldPinCode = "";
@@ -412,7 +412,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
                 if (mLockManager.getAppLock().checkPasscode(mPinCode)) {
                     setResult(RESULT_OK);
                     onPinCodeSuccess();
-                    onPin(mPinCode, fingerprintAvailable());
+                    onPin(mPinCode, false, fingerprintAvailable());
                     finish();
                 } else {
                     onPinCodeError();
@@ -529,7 +529,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
      * @param attempts the number of attempts the user had used
      */
     public abstract void onPinSuccess(int attempts);
-    public abstract void onPin(String pin, boolean fingerprintAvailable);
+    public abstract void onPin(String pin, boolean setup, boolean fingerprintAvailable);
 
     /**
      * Gets the resource id to the {@link View} to be set with {@link #setContentView(int)}.
