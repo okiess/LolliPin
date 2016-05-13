@@ -41,6 +41,7 @@
             android:layout_centerHorizontal="true"
             android:textColor="@color/dark_grey_color"
             android:textSize="@dimen/pin_code_step_text_size"
+            android:textAlignment="center"
             app:tv_typeface="roboto_light" />
 
         <com.github.orangegangsters.lollipin.lib.views.PinCodeRoundView
