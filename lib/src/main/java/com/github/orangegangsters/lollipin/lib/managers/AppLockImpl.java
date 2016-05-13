@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
 
@@ -59,7 +60,7 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
     /**
      * The default password salt
      */
-    private static final String DEFAULT_PASSWORD_SALT = "7xn7@c$";
+    private static final String DEFAULT_PASSWORD_SALT = "hQXV3YfjivYzsqAzqH7oK^]JYLxgDfcRKiwFzsJDsigfxfnzEU";
     /**
      * The key algorithm used to generating the dynamic salt
      */
@@ -82,6 +83,7 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
      * The activity class that extends {@link com.github.orangegangsters.lollipin.lib.managers.AppLockActivity}
      */
     private Class<T> mActivityClass;
+    private Context mContext;
 
     /**
      * Static instance of {@link AppLockImpl}
@@ -108,6 +110,7 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
         super();
         this.mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         this.mActivityClass = activityClass;
+        this.mContext = context;
     }
 
     @Override
@@ -231,7 +234,8 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
         Algorithm algorithm = Algorithm.getFromText(mSharedPreferences.getString(PASSWORD_ALGORITHM_PREFERENCE_KEY, ""));
 
         String salt = getSalt();
-        passcode = salt + passcode + salt;
+        String androidId = Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
+        passcode = salt + passcode + androidId;
         passcode = Encryptor.getSHA(passcode, algorithm);
         String storedPasscode = "";
 
@@ -250,13 +254,14 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
     public boolean setPasscode(String passcode) {
         String salt = getSalt();
         SharedPreferences.Editor editor = mSharedPreferences.edit();
+        String androidId = Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
 
         if (passcode == null) {
             editor.remove(PASSWORD_PREFERENCE_KEY);
             editor.apply();
             this.disable();
         } else {
-            passcode = salt + passcode + salt;
+            passcode = salt + passcode + androidId;
             setAlgorithm(Algorithm.SHA256);
             passcode = Encryptor.getSHA(passcode, Algorithm.SHA256);
             editor.putString(PASSWORD_PREFERENCE_KEY, passcode);
