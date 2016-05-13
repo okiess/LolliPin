@@ -20,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.orangegangsters.lollipin.lib.PinCompatActivity;
 import com.github.orangegangsters.lollipin.lib.R;
@@ -372,7 +373,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
                     mType = AppLock.CONFIRM_PIN;
                     setStepText();
                 } else {
-                    // TODO show error message
+                    Toast.makeText(getApplicationContext(), getString(R.string.pin_validation_failed), Toast.LENGTH_LONG).show();
                     mOldPinCode = "";
                     setPinCode("");
                     mEditText.setText("");

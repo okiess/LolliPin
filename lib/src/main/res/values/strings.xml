@@ -31,4 +31,6 @@
     <string name="pin_code_fingerprint_success">Fingerprint recognized</string>
     <string name="pin_code_fingerprint_not_recognized">Fingerprint not recognized. Try again</string>
 
+    <string name="pin_validation_failed">Invalid pincode format. Must be alphanumeric!</string>
+
 </resources>
