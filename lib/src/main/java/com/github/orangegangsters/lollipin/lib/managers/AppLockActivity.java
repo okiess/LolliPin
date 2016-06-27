@@ -174,6 +174,8 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
                 }
             }
         });
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent("pinCodeEntryShowing"));
     }
 
     private boolean keyboardShown(View rootView) {
