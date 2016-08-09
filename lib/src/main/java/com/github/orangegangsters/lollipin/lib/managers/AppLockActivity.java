@@ -159,10 +159,14 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
 
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // Log.d(TAG, "onTextChanged: " + s.toString() + " START: " + start + " BEFORE: " + before + " COUNT: " + count);
-                if (s.toString() != null && !s.toString().isEmpty()) {
+                if (s.toString() != null && !s.toString().isEmpty() && mPinCode != null) {
                     if (count == 0) {
-                        setPinCode(mPinCode.substring(0, mPinCode.length() - 1));
-                    } else {
+                        if (mPinCode.length() > 0) {
+                            setPinCode(mPinCode.substring(0, mPinCode.length() - 1));
+                        } else {
+                            setPinCode("");
+                        }
+                    } else if (s.toString().length() > 0) {
                         setPinCode(mPinCode + s.toString().substring(s.toString().length() - 1));
                     }
                 } else {
