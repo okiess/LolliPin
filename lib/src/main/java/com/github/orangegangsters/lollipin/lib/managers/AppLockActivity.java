@@ -219,6 +219,11 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
             } else {
                 mFingerprintImageView.setVisibility(View.GONE);
                 mFingerprintTextView.setVisibility(View.GONE);
+                if (mEditText != null) {
+                    mEditText.requestFocus();
+                    ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mEditText, 0);
+                }
+                ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
             }
         } else {
             mFingerprintImageView.setVisibility(View.GONE);
@@ -230,6 +235,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
                 mEditText.requestFocus();
                 ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mEditText, 0);
             }
+            ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
         }
     }
 
