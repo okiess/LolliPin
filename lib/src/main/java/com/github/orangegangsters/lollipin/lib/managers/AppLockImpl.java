@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
+import android.view.inputmethod.InputMethodManager;
 
 import com.github.orangegangsters.lollipin.lib.PinActivity;
 import com.github.orangegangsters.lollipin.lib.PinCompatActivity;
@@ -336,6 +337,10 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
         // no pass code set
         if (!isPasscodeSet()) {
             Log.d(TAG, "lock passcode not set.");
+
+            ((InputMethodManager) activity.getApplication().getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(
+                    InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+
             return false;
         }
 
@@ -381,6 +386,9 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             activity.getApplication().startActivity(intent);
         }
+
+        ((InputMethodManager) activity.getApplication().getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(
+                InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
 
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
             return;
