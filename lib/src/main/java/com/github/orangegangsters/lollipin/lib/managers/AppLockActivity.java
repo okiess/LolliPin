@@ -7,11 +7,13 @@ import android.graphics.Rect;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
@@ -219,11 +221,6 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
             } else {
                 mFingerprintImageView.setVisibility(View.GONE);
                 mFingerprintTextView.setVisibility(View.GONE);
-                if (mEditText != null) {
-                    mEditText.requestFocus();
-                    ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mEditText, 0);
-                }
-                ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
             }
         } else {
             mFingerprintImageView.setVisibility(View.GONE);
@@ -231,12 +228,34 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
             if (mFingerprintUiHelper != null) {
                 mFingerprintUiHelper.stopListening();
             }
-            if (mEditText != null) {
-                mEditText.requestFocus();
-                ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mEditText, 0);
-            }
-            ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
         }
+        if (mEditText != null) {
+            mEditText.requestFocus();
+            ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mEditText, 0);
+        }
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                forceKeyboard();
+            }
+        }, 50);
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        forceKeyboard();
+        return super.dispatchTouchEvent(ev);
+    }
+
+    private void forceKeyboard() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(getCurrentFocus(), InputMethodManager.SHOW_FORCED);
+            }
+        });
     }
 
     /**
