@@ -226,6 +226,10 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
             if (mFingerprintUiHelper != null) {
                 mFingerprintUiHelper.stopListening();
             }
+            if (mEditText != null) {
+                mEditText.requestFocus();
+                ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mEditText, 0);
+            }
         }
     }
 
