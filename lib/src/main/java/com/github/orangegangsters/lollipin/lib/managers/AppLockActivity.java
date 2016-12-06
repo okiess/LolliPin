@@ -478,11 +478,11 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
     public void onAuthenticated() {
         Log.i(TAG, "Fingerprint READ!!!");
         setResult(RESULT_OK);
-        onPinCodeSuccess();
         if (mLockManager.getAppLock().shouldPersistPin()) {
             Log.d(TAG, "Restoring app pin...");
             onPin(mLockManager.getAppLock().readPasscode(), false, true);
         }
+        onPinCodeSuccess();
         finish();
     }
 
