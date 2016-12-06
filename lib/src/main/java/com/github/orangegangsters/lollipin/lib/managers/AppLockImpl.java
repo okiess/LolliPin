@@ -271,13 +271,13 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
         String salt = getSalt();
         String androidId = Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
         String storedPasscode = "";
-        Algorithm algorithm = Algorithm.getFromText(mSharedPreferences.getString(PASSWORD_ALGORITHM_PREFERENCE_KEY, ""));
+        setAlgorithm(Algorithm.SHA256);
         if (mSharedPreferences.contains(PASSWORD_PREFERENCE_KEY)) {
             storedPasscode = mSharedPreferences.getString(PASSWORD_PREFERENCE_KEY, "");
         }
         if (shouldPersistPin()) {
-            final String androidIdUsed = Encryptor.getSHA(mSharedPreferences.getString(ANDROID_ID_PREFERENCE_KEY, ""), algorithm);
-            final String currentAndroidId = Encryptor.getSHA(androidId, algorithm);
+            final String androidIdUsed = Encryptor.getSHA(mSharedPreferences.getString(ANDROID_ID_PREFERENCE_KEY, ""), Algorithm.SHA256);
+            final String currentAndroidId = Encryptor.getSHA(androidId, Algorithm.SHA256);
             if (!androidIdUsed.equals(currentAndroidId)) {
                 Log.e(TAG, "Device changed, app pin is now unreadable! PLEASE REINSTALL!");
                 LocalBroadcastManager.getInstance(mContext).sendBroadcast(new Intent("androidIdChanged"));
@@ -288,19 +288,19 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
             return decStoredPasscode.equals(passcode);
         } else {
             passcode = salt + passcode + androidId;
-            passcode = Encryptor.getSHA(passcode, algorithm);
+            passcode = Encryptor.getSHA(passcode, Algorithm.SHA256);
             return storedPasscode.equals(passcode);
         }
     }
 
     @Override
     protected String readPasscode() {
+        setAlgorithm(Algorithm.SHA256);
         if (shouldPersistPin() && isPasscodeSet() && externalSecret != null && externalSecret.length() > 0) {
             String salt = getSalt();
             String androidId = Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
-            Algorithm algorithm = Algorithm.getFromText(mSharedPreferences.getString(PASSWORD_ALGORITHM_PREFERENCE_KEY, ""));
-            final String androidIdUsed = Encryptor.getSHA(mSharedPreferences.getString(ANDROID_ID_PREFERENCE_KEY, ""), algorithm);
-            final String currentAndroidId = Encryptor.getSHA(androidId, algorithm);
+            final String androidIdUsed = Encryptor.getSHA(mSharedPreferences.getString(ANDROID_ID_PREFERENCE_KEY, ""), Algorithm.SHA256);
+            final String currentAndroidId = Encryptor.getSHA(androidId, Algorithm.SHA256);
             if (!androidIdUsed.equals(currentAndroidId)) {
                 Log.e(TAG, "Device changed, app pin is now unreadable! PLEASE REINSTALL!");
                 LocalBroadcastManager.getInstance(mContext).sendBroadcast(new Intent("androidIdChanged"));
