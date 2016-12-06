@@ -276,7 +276,7 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
             storedPasscode = mSharedPreferences.getString(PASSWORD_PREFERENCE_KEY, "");
         }
         if (shouldPersistPin()) {
-            final String androidIdUsed = Encryptor.getSHA(mSharedPreferences.getString(ANDROID_ID_PREFERENCE_KEY, ""), Algorithm.SHA256);
+            final String androidIdUsed = mSharedPreferences.getString(ANDROID_ID_PREFERENCE_KEY, "");
             final String currentAndroidId = Encryptor.getSHA(androidId, Algorithm.SHA256);
             if (!androidIdUsed.equals(currentAndroidId)) {
                 Log.e(TAG, "Device changed, app pin is now unreadable! PLEASE REINSTALL!");
@@ -299,7 +299,7 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
         if (shouldPersistPin() && isPasscodeSet() && externalSecret != null && externalSecret.length() > 0) {
             String salt = getSalt();
             String androidId = Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
-            final String androidIdUsed = Encryptor.getSHA(mSharedPreferences.getString(ANDROID_ID_PREFERENCE_KEY, ""), Algorithm.SHA256);
+            final String androidIdUsed = mSharedPreferences.getString(ANDROID_ID_PREFERENCE_KEY, "");
             final String currentAndroidId = Encryptor.getSHA(androidId, Algorithm.SHA256);
             if (!androidIdUsed.equals(currentAndroidId)) {
                 Log.e(TAG, "Device changed, app pin is now unreadable! PLEASE REINSTALL!");
