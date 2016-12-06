@@ -200,7 +200,7 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
     private void initLayoutForFingerprint() {
         mFingerprintImageView = (ImageView) this.findViewById(R.id.pin_code_fingerprint_imageview);
         mFingerprintTextView = (TextView) this.findViewById(R.id.pin_code_fingerprint_textview);
-        if (mLockManager.getAppLock().shouldShowFingerprint()) {
+        if (mLockManager.getAppLock().shouldShowFingerprint() || (mLockManager.getAppLock().isPasscodeSet() && mLockManager.getAppLock().shouldPersistPin())) {
             if (mType == AppLock.UNLOCK_PIN && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 mFingerprintManager = (FingerprintManager) getSystemService(Context.FINGERPRINT_SERVICE);
                 mFingerprintUiHelper = new FingerprintUiHelper.FingerprintUiHelperBuilder(mFingerprintManager).build(mFingerprintImageView, mFingerprintTextView, this);
