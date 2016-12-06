@@ -275,7 +275,7 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
         if (mSharedPreferences.contains(PASSWORD_PREFERENCE_KEY)) {
             storedPasscode = mSharedPreferences.getString(PASSWORD_PREFERENCE_KEY, "");
         }
-        if (shouldPersistPin()) {
+        if (shouldPersistPin() && (passcode == null || passcode.length() == 0)) {
             final String androidIdUsed = mSharedPreferences.getString(ANDROID_ID_PREFERENCE_KEY, "");
             final String currentAndroidId = Encryptor.getSHA(androidId, Algorithm.SHA256);
             if (!androidIdUsed.equals(currentAndroidId)) {
