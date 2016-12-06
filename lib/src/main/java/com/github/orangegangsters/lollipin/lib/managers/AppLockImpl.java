@@ -50,6 +50,7 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
      */
     private static final String SHOW_FORGOT_PREFERENCE_KEY = "SHOW_FORGOT_PREFERENCE_KEY";
     private static final String SHOW_FINGERPRINT_PREFERENCE_KEY = "SHOW_USE_FINGERPRINT_KEY";
+    private static final String PIN_PERSIST_PREFERENCE_KEY = "PERSIST_APP_PIN_KEY";
     /**
      * The {@link SharedPreferences} key used to store whether the user has backed out of the {@link AppLockActivity}
      */
@@ -181,6 +182,13 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
     }
 
     @Override
+    public void setShouldPersistPin(boolean persistPin) {
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putBoolean(PIN_PERSIST_PREFERENCE_KEY, persistPin);
+        editor.apply();
+    }
+
+    @Override
     public boolean pinChallengeCancelled() {
         return mSharedPreferences.getBoolean(PIN_CHALLENGE_CANCELLED_PREFERENCE_KEY, false);
     }
@@ -200,6 +208,11 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
     @Override
     public boolean shouldShowFingerprint() {
         return mSharedPreferences.getBoolean(SHOW_FINGERPRINT_PREFERENCE_KEY, false);
+    }
+
+    @Override
+    public boolean shouldPersistPin() {
+        return mSharedPreferences.getBoolean(PIN_PERSIST_PREFERENCE_KEY, false);
     }
 
     @Override
