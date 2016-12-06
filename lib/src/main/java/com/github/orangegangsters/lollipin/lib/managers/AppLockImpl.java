@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Base64;
 import android.util.Log;
 
@@ -28,6 +29,7 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
      * The {@link android.content.SharedPreferences} key used to store the password
      */
     private static final String PASSWORD_PREFERENCE_KEY = "PASSCODE";
+    private static final String ANDROID_ID_PREFERENCE_KEY = "ANDROID_ID";
     /**
      * The {@link android.content.SharedPreferences} key used to store the {@link Algorithm}
      */
@@ -241,6 +243,7 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
         PinCompatActivity.clearListeners();
         PinFragmentActivity.clearListeners();
         mSharedPreferences.edit().remove(PASSWORD_PREFERENCE_KEY)
+                .remove(ANDROID_ID_PREFERENCE_KEY)
                 .remove(LAST_ACTIVE_MILLIS_PREFERENCE_KEY)
                 .remove(PASSWORD_ALGORITHM_PREFERENCE_KEY)
                 .remove(TIMEOUT_MILLIS_PREFERENCE_KEY)
@@ -268,16 +271,21 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
         String salt = getSalt();
         String androidId = Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
         String storedPasscode = "";
+        Algorithm algorithm = Algorithm.getFromText(mSharedPreferences.getString(PASSWORD_ALGORITHM_PREFERENCE_KEY, ""));
         if (mSharedPreferences.contains(PASSWORD_PREFERENCE_KEY)) {
             storedPasscode = mSharedPreferences.getString(PASSWORD_PREFERENCE_KEY, "");
         }
-
         if (shouldPersistPin()) {
+            final String androidIdUsed = Encryptor.getSHA(mSharedPreferences.getString(ANDROID_ID_PREFERENCE_KEY, ""), algorithm);
+            if (!androidIdUsed.equals(androidId)) {
+                Log.e(TAG, "Device changed, app pin is now unreadable! PLEASE REINSTALL!");
+                LocalBroadcastManager.getInstance(mContext).sendBroadcast(new Intent("androidIdChanged"));
+                return false;
+            }
             final String secret = salt + externalSecret + androidId;
             String decStoredPasscode = Encryptor.decryptString(secret, storedPasscode);
             return decStoredPasscode.equals(passcode);
         } else {
-            Algorithm algorithm = Algorithm.getFromText(mSharedPreferences.getString(PASSWORD_ALGORITHM_PREFERENCE_KEY, ""));
             passcode = salt + passcode + androidId;
             passcode = Encryptor.getSHA(passcode, algorithm);
             return storedPasscode.equals(passcode);
@@ -289,6 +297,13 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
         if (shouldPersistPin() && isPasscodeSet() && externalSecret != null && externalSecret.length() > 0) {
             String salt = getSalt();
             String androidId = Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
+            Algorithm algorithm = Algorithm.getFromText(mSharedPreferences.getString(PASSWORD_ALGORITHM_PREFERENCE_KEY, ""));
+            final String androidIdUsed = Encryptor.getSHA(mSharedPreferences.getString(ANDROID_ID_PREFERENCE_KEY, ""), algorithm);
+            if (!androidIdUsed.equals(androidId)) {
+                Log.e(TAG, "Device changed, app pin is now unreadable! PLEASE REINSTALL!");
+                LocalBroadcastManager.getInstance(mContext).sendBroadcast(new Intent("androidIdChanged"));
+                return null;
+            }
             String storedPasscode = mSharedPreferences.getString(PASSWORD_PREFERENCE_KEY, "");
             final String secret = salt + externalSecret + androidId;
             return Encryptor.decryptString(secret, storedPasscode);
@@ -301,6 +316,7 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
         String salt = getSalt();
         SharedPreferences.Editor editor = mSharedPreferences.edit();
         String androidId = Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
+        setAlgorithm(Algorithm.SHA256);
 
         if (passcode == null) {
             editor.remove(PASSWORD_PREFERENCE_KEY);
@@ -310,6 +326,7 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
             if (shouldPersistPin()) {
                 if (externalSecret.length() > 0) {
                     final String secret = salt + externalSecret + androidId;
+                    editor.putString(ANDROID_ID_PREFERENCE_KEY, Encryptor.getSHA(androidId, Algorithm.SHA256));
                     editor.putString(PASSWORD_PREFERENCE_KEY, Encryptor.encryptString(secret, passcode));
                     editor.apply();
                     this.enable();
@@ -319,7 +336,6 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
                 }
             } else {
                 passcode = salt + passcode + androidId;
-                setAlgorithm(Algorithm.SHA256);
                 passcode = Encryptor.getSHA(passcode, Algorithm.SHA256);
                 editor.putString(PASSWORD_PREFERENCE_KEY, passcode);
                 editor.apply();
