@@ -3,7 +3,9 @@ package com.github.orangegangsters.lollipin.lib.encryption;
 import android.text.TextUtils;
 
 import com.github.orangegangsters.lollipin.lib.enums.Algorithm;
+import com.scottyab.aescrypt.AESCrypt;
 
+import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.util.Locale;
 
@@ -82,5 +84,39 @@ public class Encryptor {
                     return null;
                 }
         }
+    }
+
+    /**
+     * Wrapper method for AESCrypt.
+     * @param password Password
+     * @param clearTextValue Clear text value
+     * @return encrypted String
+     */
+    public String encryptString(String password, String clearTextValue) {
+        try {
+            if (password != null && clearTextValue != null) {
+                return AESCrypt.encrypt(password, clearTextValue);
+            }
+        } catch (GeneralSecurityException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Wrapper method for AESCrypt.
+     * @param password Password
+     * @param encryptedValue Encrypted value
+     * @return decrypted String
+     */
+    public String decryptString(String password, String encryptedValue) {
+        try {
+            if (password != null && encryptedValue != null) {
+                return AESCrypt.decrypt(password, encryptedValue);
+            }
+        } catch (GeneralSecurityException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

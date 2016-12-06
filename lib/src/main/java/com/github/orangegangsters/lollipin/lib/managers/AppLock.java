@@ -107,6 +107,7 @@ public abstract class AppLock {
     public abstract void setShouldShowForgot(boolean showForgot);
     public abstract void setShouldShowFingerprint(boolean showFingerprint);
     public abstract void setShouldPersistPin(boolean persistPin);
+    public abstract void setExternalSecret(String nonPersistantUniqueAppInstanceString);
 
     /**
      * Get whether the user backed out of the {@link AppLockActivity} previously

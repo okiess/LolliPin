@@ -9,7 +9,6 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
-import android.view.inputmethod.InputMethodManager;
 
 import com.github.orangegangsters.lollipin.lib.PinActivity;
 import com.github.orangegangsters.lollipin.lib.PinCompatActivity;
@@ -92,6 +91,8 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
      * Static instance of {@link AppLockImpl}
      */
     private static AppLockImpl mInstance;
+
+    private String externalSecret = "";
 
     /**
      * Static method that allows to get back the current static Instance of {@link AppLockImpl}
@@ -189,6 +190,11 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
     }
 
     @Override
+    public void setExternalSecret(String nonPersistantUniqueAppInstanceString) {
+        this.externalSecret = nonPersistantUniqueAppInstanceString;
+    }
+
+    @Override
     public boolean pinChallengeCancelled() {
         return mSharedPreferences.getBoolean(PIN_CHALLENGE_CANCELLED_PREFERENCE_KEY, false);
     }
@@ -240,6 +246,8 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
                 .remove(TIMEOUT_MILLIS_PREFERENCE_KEY)
                 .remove(LOGO_ID_PREFERENCE_KEY)
                 .remove(SHOW_FORGOT_PREFERENCE_KEY)
+                .remove(PIN_PERSIST_PREFERENCE_KEY)
+                .remove(SHOW_FINGERPRINT_PREFERENCE_KEY)
                 .apply();
     }
 
@@ -258,22 +266,28 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
     @Override
     public boolean checkPasscode(String passcode) {
         Algorithm algorithm = Algorithm.getFromText(mSharedPreferences.getString(PASSWORD_ALGORITHM_PREFERENCE_KEY, ""));
-
         String salt = getSalt();
         String androidId = Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
-        passcode = salt + passcode + androidId;
-        passcode = Encryptor.getSHA(passcode, algorithm);
-        String storedPasscode = "";
 
-        if (mSharedPreferences.contains(PASSWORD_PREFERENCE_KEY)) {
-            storedPasscode = mSharedPreferences.getString(PASSWORD_PREFERENCE_KEY, "");
-        }
-
-        if (storedPasscode.equalsIgnoreCase(passcode)) {
-            return true;
+        if (shouldPersistPin()) {
+            // TODO
         } else {
-            return false;
+            passcode = salt + passcode + androidId;
+            passcode = Encryptor.getSHA(passcode, algorithm);
+            String storedPasscode = "";
+
+            if (mSharedPreferences.contains(PASSWORD_PREFERENCE_KEY)) {
+                storedPasscode = mSharedPreferences.getString(PASSWORD_PREFERENCE_KEY, "");
+            }
+
+            if (storedPasscode.equals(passcode)) {
+                return true;
+            } else {
+                return false;
+            }
         }
+
+        return false;
     }
 
     @Override
@@ -287,11 +301,15 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
             editor.apply();
             this.disable();
         } else {
-            passcode = salt + passcode + androidId;
-            setAlgorithm(Algorithm.SHA256);
-            passcode = Encryptor.getSHA(passcode, Algorithm.SHA256);
-            editor.putString(PASSWORD_PREFERENCE_KEY, passcode);
-            editor.apply();
+            if (shouldPersistPin()) {
+                // TODO
+            } else {
+                passcode = salt + passcode + androidId;
+                setAlgorithm(Algorithm.SHA256);
+                passcode = Encryptor.getSHA(passcode, Algorithm.SHA256);
+                editor.putString(PASSWORD_PREFERENCE_KEY, passcode);
+                editor.apply();
+            }
             this.enable();
         }
 
