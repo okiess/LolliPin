@@ -328,7 +328,8 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
             if (shouldPersistPin()) {
                 if (externalSecret.length() > 0) {
                     final String secret = salt + externalSecret + androidId;
-                    editor.putString(ANDROID_ID_PREFERENCE_KEY, Encryptor.getSHA(androidId, Algorithm.SHA256));
+                    final String currentAndroidId = Encryptor.getSHA(androidId, Algorithm.SHA256);
+                    editor.putString(ANDROID_ID_PREFERENCE_KEY, currentAndroidId);
                     editor.putString(PASSWORD_PREFERENCE_KEY, Encryptor.encryptString(secret, passcode));
                     editor.apply();
                     this.enable();
