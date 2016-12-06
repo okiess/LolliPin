@@ -92,7 +92,7 @@ public class Encryptor {
      * @param clearTextValue Clear text value
      * @return encrypted String
      */
-    public String encryptString(String password, String clearTextValue) {
+    public static String encryptString(String password, String clearTextValue) {
         try {
             if (password != null && clearTextValue != null) {
                 return AESCrypt.encrypt(password, clearTextValue);
@@ -109,7 +109,7 @@ public class Encryptor {
      * @param encryptedValue Encrypted value
      * @return decrypted String
      */
-    public String decryptString(String password, String encryptedValue) {
+    public static String decryptString(String password, String encryptedValue) {
         try {
             if (password != null && encryptedValue != null) {
                 return AESCrypt.decrypt(password, encryptedValue);

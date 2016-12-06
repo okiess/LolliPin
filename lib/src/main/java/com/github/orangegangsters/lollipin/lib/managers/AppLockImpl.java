@@ -92,7 +92,7 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
      */
     private static AppLockImpl mInstance;
 
-    private String externalSecret = "";
+    private String externalSecret = ""; // Set your own per app installation!!!!
 
     /**
      * Static method that allows to get back the current static Instance of {@link AppLockImpl}
@@ -268,26 +268,20 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
         Algorithm algorithm = Algorithm.getFromText(mSharedPreferences.getString(PASSWORD_ALGORITHM_PREFERENCE_KEY, ""));
         String salt = getSalt();
         String androidId = Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
+        String storedPasscode = "";
+        if (mSharedPreferences.contains(PASSWORD_PREFERENCE_KEY)) {
+            storedPasscode = mSharedPreferences.getString(PASSWORD_PREFERENCE_KEY, "");
+        }
 
         if (shouldPersistPin()) {
-            // TODO
+            final String secret = salt + externalSecret + androidId;
+            String decStoredPasscode = Encryptor.decryptString(secret, storedPasscode);
+            return decStoredPasscode.equals(passcode);
         } else {
             passcode = salt + passcode + androidId;
             passcode = Encryptor.getSHA(passcode, algorithm);
-            String storedPasscode = "";
-
-            if (mSharedPreferences.contains(PASSWORD_PREFERENCE_KEY)) {
-                storedPasscode = mSharedPreferences.getString(PASSWORD_PREFERENCE_KEY, "");
-            }
-
-            if (storedPasscode.equals(passcode)) {
-                return true;
-            } else {
-                return false;
-            }
+            return storedPasscode.equals(passcode);
         }
-
-        return false;
     }
 
     @Override
@@ -302,17 +296,24 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
             this.disable();
         } else {
             if (shouldPersistPin()) {
-                // TODO
+                if (externalSecret.length() > 0) {
+                    final String secret = salt + externalSecret + androidId;
+                    editor.putString(PASSWORD_PREFERENCE_KEY, Encryptor.encryptString(secret, passcode));
+                    editor.apply();
+                    this.enable();
+                } else {
+                    this.disable();
+                    return false;
+                }
             } else {
                 passcode = salt + passcode + androidId;
                 setAlgorithm(Algorithm.SHA256);
                 passcode = Encryptor.getSHA(passcode, Algorithm.SHA256);
                 editor.putString(PASSWORD_PREFERENCE_KEY, passcode);
                 editor.apply();
+                this.enable();
             }
-            this.enable();
         }
-
         return true;
     }
 
