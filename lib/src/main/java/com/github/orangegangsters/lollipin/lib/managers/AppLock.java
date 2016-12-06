@@ -163,6 +163,8 @@ public abstract class AppLock {
      */
     public abstract boolean checkPasscode(String passcode);
 
+    protected abstract String readPasscode();
+
     /**
      * Check the {@link android.content.SharedPreferences} to see if a password already exists
      */

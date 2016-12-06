@@ -265,7 +265,6 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
 
     @Override
     public boolean checkPasscode(String passcode) {
-        Algorithm algorithm = Algorithm.getFromText(mSharedPreferences.getString(PASSWORD_ALGORITHM_PREFERENCE_KEY, ""));
         String salt = getSalt();
         String androidId = Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
         String storedPasscode = "";
@@ -278,10 +277,23 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
             String decStoredPasscode = Encryptor.decryptString(secret, storedPasscode);
             return decStoredPasscode.equals(passcode);
         } else {
+            Algorithm algorithm = Algorithm.getFromText(mSharedPreferences.getString(PASSWORD_ALGORITHM_PREFERENCE_KEY, ""));
             passcode = salt + passcode + androidId;
             passcode = Encryptor.getSHA(passcode, algorithm);
             return storedPasscode.equals(passcode);
         }
+    }
+
+    @Override
+    protected String readPasscode() {
+        if (shouldPersistPin() && isPasscodeSet() && externalSecret != null && externalSecret.length() > 0) {
+            String salt = getSalt();
+            String androidId = Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
+            String storedPasscode = mSharedPreferences.getString(PASSWORD_PREFERENCE_KEY, "");
+            final String secret = salt + externalSecret + androidId;
+            return Encryptor.decryptString(secret, storedPasscode);
+        }
+        return null;
     }
 
     @Override
