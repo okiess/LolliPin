@@ -107,6 +107,8 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
      * Init completely the layout, depending of the extra {@link com.github.orangegangsters.lollipin.lib.managers.AppLock#EXTRA_TYPE}
      */
     private void initLayout(Intent intent) {
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent("pinCodeEntryShowing"));
+
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD_MR1) {
             //Animate if greater than 2.3.3
             overridePendingTransition(R.anim.nothing, R.anim.nothing);
@@ -180,8 +182,6 @@ public abstract class AppLockActivity extends PinCompatActivity implements Keybo
                 }
             }
         });
-
-        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent("pinCodeEntryShowing"));
     }
 
     private boolean keyboardShown(View rootView) {
