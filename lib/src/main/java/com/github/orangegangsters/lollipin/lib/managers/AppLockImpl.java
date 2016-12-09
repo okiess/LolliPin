@@ -413,6 +413,8 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
             return false;
         }
 
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(new Intent("pinCodeEntryShowing"));
+
         return true;
     }
 
