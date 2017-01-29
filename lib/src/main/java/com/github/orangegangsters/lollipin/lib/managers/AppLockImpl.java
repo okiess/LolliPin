@@ -285,11 +285,11 @@ public class AppLockImpl<T extends AppLockActivity> extends AppLock implements L
             }
             final String secret = salt + externalSecret + androidId;
             String decStoredPasscode = Encryptor.decryptString(secret, storedPasscode);
-            return decStoredPasscode.equals(passcode);
+            return (decStoredPasscode != null && decStoredPasscode.equals(passcode));
         } else {
             passcode = salt + passcode + androidId;
             passcode = Encryptor.getSHA(passcode, Algorithm.SHA256);
-            return storedPasscode.equals(passcode);
+            return (storedPasscode != null && storedPasscode.equals(passcode));
         }
     }
 
